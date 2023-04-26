@@ -43,21 +43,30 @@ class VectorField {
     this.lastTime = 0;
     this.interval = 1000 / 60;
     this.timer = 0;
-    this.cellSize = 5;
+    // 5
+    this.cellSize = 15;
     this.gradient;
+    this.curvatureRadius = 0;
+    this.curveVelocity = 0.03;
     this.#drawGradient();
     this.#ctx.strokeStyle = this.gradient;
   }
-
+  //Private method to draw the line
   #drawLine(x, y, angle) {
-    let length = 300;
-    this.#ctx.lineWidth = 0.2;
+    // 20
+    let length = 15;
+    // .2/.3
+    this.#ctx.lineWidth = 1;
     this.#ctx.beginPath();
     this.#ctx.moveTo(x, y);
-    this.#ctx.lineTo(x + Math.sin(angle) * 20, y + Math.cos(angle) * 20);
+    this.#ctx.lineTo(
+      x + Math.sin(angle) * length,
+      y + Math.cos(angle) * length
+    );
     this.#ctx.closePath();
     this.#ctx.stroke();
   }
+  // Private method to create gradien spectrum in the canvas
   #drawGradient() {
     this.gradient = this.#ctx.createLinearGradient(
       0,
@@ -73,18 +82,26 @@ class VectorField {
     this.gradient.addColorStop(".8", "#ff7f00");
     this.gradient.addColorStop(".9", "#ff0000");
   }
-
+  // Method to draw the line in canvas and animate it
   animate(timeStamp) {
+    // deltaTime to get the interval of animation frame
     const deltaTime = timeStamp - this.lastTime;
     this.lastTime = timeStamp;
+    console.log(deltaTime);
     if (this.timer > this.interval) {
       this.#ctx.clearRect(0, 0, this.#width, this.#height);
+      this.curvatureRadius += this.curveVelocity;
+      if (this.curvatureRadius > 10 || this.curvatureRadius < -10)
+        this.curveVelocity *= -1;
       for (let i = 0; i < this.#height; i += this.cellSize) {
         for (let j = 0; j < this.#width; j += this.cellSize) {
           // The multiplier outside decides how much the pattern is curving on itself
           // The value multiplier inside sine and cosine function zooms in or out of the Pattern
           // Lower value results in zooming out
-          const angle = (Math.cos(j * 0.005) + Math.sin(i * 0.005)) * 10;
+          // .005
+          const angle =
+            (Math.cos(j * 0.0075) + Math.sin(i * 0.0075)) *
+            this.curvatureRadius;
           this.#drawLine(j, i, angle);
         }
       }
